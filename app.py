@@ -1,6 +1,6 @@
 """
 app.py - Flask backend for NLP Text Intelligence Platform
-Integrates Google Gemini 1.5 Flash LLM for multiple NLP tasks.
+Integrates Google Gemini 3.8 Flash LLM for multiple NLP tasks.
 """
 
 import os
