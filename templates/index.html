@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NLP Intelligence Platform | AI-Powered Text Analysis</title>
+  <meta name="description" content="Advanced NLP text analysis platform powered by Google Gemini AI. Perform sentiment analysis, summarization, entity extraction, Q&A, classification, and more." />
+  <meta name="keywords" content="NLP, natural language processing, AI, sentiment analysis, text summarization, named entity recognition, Gemini" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="header" role="banner">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="13" stroke="url(#grad1)" stroke-width="2"/>
+            <path d="M8 14h12M14 8v12" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="14" cy="14" r="3" fill="url(#grad1)"/>
+            <defs>
+              <linearGradient id="grad1" x1="0" y1="0" x2="28" y2="28">
+                <stop offset="0%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#06b6d4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <span class="logo-name">NLP<span class="accent">Intel</span></span>
+          <span class="logo-sub">Powered by Gemini AI</span>
+        </div>
+      </div>
+      <div class="header-status">
+        <span class="status-dot" id="statusDot" aria-label="API status"></span>
+        <span class="status-label" id="statusLabel">Checking...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main" role="main">
+
+    <!-- Hero Section -->
+    <section class="hero" aria-labelledby="heroTitle">
+      <h1 id="heroTitle" class="hero-title">
+        Text Intelligence,<br/>
+        <span class="gradient-text">Reimagined with AI</span>
+      </h1>
+      <p class="hero-subtitle">
+        8 powerful NLP tools in one platform — sentiment analysis, summarization, entity extraction,
+        Q&amp;A, classification, keywords, translation, and writing improvement.
+      </p>
+    </section>
+
+    <!-- Input Area -->
+    <section class="input-section" aria-label="Text input">
+      <div class="input-card glass">
+        <div class="input-header">
+          <label for="mainText" class="input-label">Your Text</label>
+          <div class="input-meta">
+            <span class="char-count" id="charCount">0 / 15,000</span>
+            <button class="btn-ghost btn-small" id="clearBtn" type="button" aria-label="Clear text">Clear</button>
+            <button class="btn-ghost btn-small" id="sampleBtn" type="button">Load Sample</button>
+          </div>
+        </div>
+        <textarea
+          id="mainText"
+          class="text-input"
+          placeholder="Paste or type your text here… (minimum 10 characters)"
+          rows="8"
+          maxlength="15000"
+          aria-describedby="charCount"
+        ></textarea>
+      </div>
+    </section>
+
+    <!-- Tools Grid -->
+    <section class="tools-section" aria-label="NLP Tools">
+      <h2 class="section-title">Choose an Analysis</h2>
+      <div class="tools-grid" role="list">
+
+        <!-- Summarize -->
+        <div class="tool-card glass" role="listitem" id="tool-summarize">
+          <div class="tool-icon" style="--c1:#7c3aed;--c2:#a855f7" aria-hidden="true">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M4 6h16M4 10h12M4 14h8M4 18h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="tool-body">
+            <h3 class="tool-title">Summarize</h3>
+            <p class="tool-desc">Extract key points and a concise summary from any text.</p>
+          </div>
+          <button class="btn-primary tool-btn" id="btnSummarize" data-endpoint="/api/summarize" type="button">Analyze</button>
+        </div>
+
+        <!-- Sentiment -->
+        <div class="tool-card glass" role="listitem" id="tool-sentiment">
+          <div class="tool-icon" style="--c1:#0891b2;--c2:#06b6d4" aria-hidden="true">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M9 13s.5 2 3 2 3-2 3-2M9 9h.01M15 9h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="tool-body">
+            <h3 class="tool-title">Sentiment Analysis</h3>
+            <p class="tool-desc">Detect emotions, tone, and sentiment scores across 6 emotion dimensions.</p>
+          </div>
+          <button class="btn-primary tool-btn" id="btnSentiment" data-endpoint="/api/sentiment" type="button">Analyze</button>
+        </div>
+
+        <!-- NER -->
+        <div class="tool-card glass" role="listitem" id="tool-ner">
+          <div class="tool-icon" style="--c1:#059669;--c2:#10b981" aria-hidden="true">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M7 7h10M7 12h6M7 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="2"/></svg>
+          </div>
+          <div class="tool-body">
+            <h3 class="tool-title">Entity Extraction</h3>
+            <p class="tool-desc">Identify people, organizations, locations, dates, and more.</p>
+          </div>
+          <button class="btn-primary tool-btn" id="btnNer" data-endpoint="/api/ner" type="button">Analyze</button>
+        </div>
+
+        <!-- Q&A -->
+        <div class="tool-card glass" role="listitem" id="tool-qa">
+          <div class="tool-icon" style="--c1:#d97706;--c2:#f59e0b" aria-hidden="true">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="currentColor" stroke-width="2"/><path d="M9 9a3 3 0 0 1 5.12 2.12c0 2-3 2.5-3 4.5M12 17.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="tool-body">
+            <h3 class="tool-title">Question & Answer</h3>
+            <p class="tool-desc">Ask any question about your text and get accurate, cited answers.</p>
+          </div>
+          <button class="btn-primary tool-btn" id="btnQa" data-endpoint="/api/qa" type="button">Analyze</button>
+        </div>
+
+        <!-- Classify -->
+        <div class="tool-card glass" role="listitem" id="tool-classify">
+          <div class="tool-icon" style="--c1:#db2777;--c2:#ec4899" aria-hidden="true">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="tool-body">
+            <h3 class="tool-title">Text Classification</h3>
+            <p class="tool-desc">Categorize text by domain, type, audience, tone and complexity.</p>
+          </div>
+          <button class="btn-primary tool-btn" id="btnClassify" data-endpoint="/api/classify" type="button">Analyze</button>
+        </div>
+
+        <!-- Keywords -->
+        <div class="tool-card glass" role="listitem" id="tool-keywords">
+          <div class="tool-icon" style="--c1:#7c3aed;--c2:#06b6d4" aria-hidden="true">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="currentColor" stroke-width="2"/><line x1="7" y1="7" x2="7.01" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="tool-body">
+            <h3 class="tool-title">Keyword Extraction</h3>
+            <p class="tool-desc">Extract top keywords, themes, and SEO tags from your content.</p>
+          </div>
+          <button class="btn-primary tool-btn" id="btnKeywords" data-endpoint="/api/keywords" type="button">Analyze</button>
+        </div>
+
+        <!-- Translate -->
+        <div class="tool-card glass" role="listitem" id="tool-translate">
+          <div class="tool-icon" style="--c1:#0891b2;--c2:#10b981" aria-hidden="true">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M4 5h7M9 3v2M12 19l4-9 4 9M12.9 17h6.2M3 15a9 9 0 0 0 9 4 9 9 0 0 0-5-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="tool-body">
+            <h3 class="tool-title">Translation</h3>
+            <p class="tool-desc">Translate text to 15 languages with cultural context notes.</p>
+            <select id="langSelect" class="lang-select" aria-label="Target language">
+              <option value="Spanish">Spanish</option>
+              <option value="French">French</option>
+              <option value="German">German</option>
+              <option value="Italian">Italian</option>
+              <option value="Portuguese">Portuguese</option>
+              <option value="Chinese">Chinese</option>
+              <option value="Japanese">Japanese</option>
+              <option value="Korean">Korean</option>
+              <option value="Arabic">Arabic</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Russian">Russian</option>
+              <option value="Dutch">Dutch</option>
+              <option value="Swedish">Swedish</option>
+              <option value="Polish">Polish</option>
+              <option value="Turkish">Turkish</option>
+            </select>
+          </div>
+          <button class="btn-primary tool-btn" id="btnTranslate" data-endpoint="/api/translate" type="button">Translate</button>
+        </div>
+
+        <!-- Improve -->
+        <div class="tool-card glass" role="listitem" id="tool-improve">
+          <div class="tool-icon" style="--c1:#d97706;--c2:#db2777" aria-hidden="true">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="tool-body">
+            <h3 class="tool-title">Writing Improvement</h3>
+            <p class="tool-desc">Fix grammar, enhance clarity, and boost readability scores.</p>
+          </div>
+          <button class="btn-primary tool-btn" id="btnImprove" data-endpoint="/api/improve" type="button">Improve</button>
+        </div>
+
+        <!-- Q&A Extra Input -->
+        <div class="qa-input-container" id="qaInputContainer" aria-hidden="true" style="display:none">
+          <div class="glass qa-input-box">
+            <label for="questionInput" class="input-label">Your Question</label>
+            <input
+              type="text"
+              id="questionInput"
+              class="text-input-sm"
+              placeholder="e.g., What is the main argument of this text?"
+              aria-label="Question for Q&A"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading State -->
+    <div class="loading-overlay" id="loadingOverlay" aria-live="polite" aria-hidden="true" style="display:none">
+      <div class="loading-card glass">
+        <div class="spinner" aria-hidden="true"></div>
+        <p class="loading-text" id="loadingText">Analyzing with Gemini AI…</p>
+        <p class="loading-sub">This usually takes 2–5 seconds</p>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <section class="results-section" id="resultsSection" aria-live="polite" style="display:none">
+      <div class="results-header">
+        <h2 class="section-title">Results</h2>
+        <div class="results-meta" id="resultsMeta"></div>
+        <button class="btn-ghost btn-small" id="closeResults" type="button" aria-label="Close results">✕ Close</button>
+      </div>
+      <div class="results-content" id="resultsContent"></div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <p>NLP Intelligence Platform &bull; Powered by <strong>Google Gemini 1.5 Flash</strong> &bull; Built with Flask &amp; Vanilla JS</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
