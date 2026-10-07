@@ -12,6 +12,7 @@ from flask_cors import CORS
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
+from openai import OpenAI
 from prompts import (
     SUMMARIZE_PROMPT,
     SENTIMENT_PROMPT,
@@ -37,19 +38,32 @@ if not GEMINI_API_KEY:
     logger.warning("GEMINI_API_KEY not set. Set it in .env file.")
 
 # Use Gemini 2.0 Flash for fast, efficient responses
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = "gemini-3.8-flash"
 
 # Lazy client — initialized on first API call to allow startup without a key
 _client = None
 
+
+
+
 def get_client():
-    """Return (or create) the Gemini client, raising clearly if key is missing."""
     global _client
+
     if _client is None:
-        api_key = os.getenv("GEMINI_API_KEY", "")
+        base_url = os.getenv("BASE_URL", "").rstrip("/")
+        api_key = os.getenv("GEMINI_API_KEY", "").strip()
+
+        if not base_url:
+            raise ValueError("BASE_URL is not set in .env")
+
         if not api_key:
-            raise ValueError("GEMINI_API_KEY is not set. Add it to your .env file.")
-        _client = genai.Client(api_key=api_key)
+            raise ValueError("API_KEY is not set in .env")
+
+        _client = OpenAI(
+            base_url=base_url,
+            api_key=api_key,
+        )
+
     return _client
 
 GEN_CONFIG = types.GenerateContentConfig(
@@ -63,46 +77,75 @@ GEN_CONFIG = types.GenerateContentConfig(
 # ── Helper: Call Gemini and parse JSON ────────────────────────────────────────
 def call_gemini(prompt: str) -> dict:
     """
-    Send a prompt to Gemini and parse the JSON response.
-    Returns a dict with 'data' on success or 'error' on failure.
+    Send prompt through the OpenAI-compatible Railway gateway
+    and parse the JSON response.
     """
+
     raw_text = ""
+
     try:
         start = time.time()
-        response = get_client().models.generate_content(
+
+        response = get_client().chat.completions.create(
             model=MODEL_NAME,
-            contents=prompt,
-            config=GEN_CONFIG,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.2,
+            max_tokens=4096,
         )
+
         elapsed = round(time.time() - start, 3)
 
-        raw_text = response.text.strip()
+        raw_text = response.choices[0].message.content.strip()
 
-        # Strip markdown code fences if present
+        if not raw_text:
+            return {
+                "success": False,
+                "error": "Model returned an empty response."
+            }
+
+        # Remove ```json ... ``` if present
         if raw_text.startswith("```"):
-            raw_text = raw_text.split("```")[1]
-            if raw_text.startswith("json"):
-                raw_text = raw_text[4:]
-            raw_text = raw_text.strip()
+            raw_text = raw_text.strip("`").strip()
+
+            if raw_text.lower().startswith("json"):
+                raw_text = raw_text[4:].strip()
 
         parsed = json.loads(raw_text)
+
         parsed["_meta"] = {
             "model": MODEL_NAME,
             "latency_seconds": elapsed,
         }
-        return {"success": True, "data": parsed}
+
+        return {
+            "success": True,
+            "data": parsed
+        }
 
     except json.JSONDecodeError as e:
-        logger.error("JSON parse error: %s | Raw: %s", e, raw_text[:500])
-        return {"success": False, "error": "Model returned invalid JSON. Please try again."}
+        logger.error(
+            "JSON parse error: %s | Raw: %s",
+            e,
+            raw_text[:500]
+        )
+
+        return {
+            "success": False,
+            "error": "Model returned invalid JSON."
+        }
+
     except Exception as e:
-        logger.error("Gemini API error: %s", e)
-        error_msg = str(e)
-        if "API_KEY_INVALID" in error_msg or "API key not valid" in error_msg:
-            return {"success": False, "error": "Invalid API key. Please check your GEMINI_API_KEY."}
-        if "quota" in error_msg.lower():
-            return {"success": False, "error": "API quota exceeded. Please wait and try again."}
-        return {"success": False, "error": f"API error: {error_msg}"}
+        logger.error("Gateway API error: %s", e)
+
+        return {
+            "success": False,
+            "error": f"API error: {str(e)}"
+        }
 
 
 def validate_text(text: str, min_len: int = 10, max_len: int = 15000) -> str | None:
@@ -311,7 +354,7 @@ def server_error(e):
 
 # ── Entry Point ────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5001))
+    port = int(os.getenv("PORT", 4000))
     debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
     logger.info("Starting NLP Intelligence Platform on port %d", port)
     app.run(host="0.0.0.0", port=port, debug=debug)
