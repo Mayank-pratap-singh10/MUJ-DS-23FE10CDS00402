@@ -9,7 +9,8 @@ import time
 import logging
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 from prompts import (
     SUMMARIZE_PROMPT,
@@ -35,21 +36,27 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 if not GEMINI_API_KEY:
     logger.warning("GEMINI_API_KEY not set. Set it in .env file.")
 
-genai.configure(api_key=GEMINI_API_KEY)
+# Use Gemini 2.0 Flash for fast, efficient responses
+MODEL_NAME = "gemini-2.0-flash"
 
-# Use Gemini 1.5 Flash for fast, efficient responses
-MODEL_NAME = "gemini-1.5-flash"
+# Lazy client — initialized on first API call to allow startup without a key
+_client = None
 
-generation_config = genai.GenerationConfig(
+def get_client():
+    """Return (or create) the Gemini client, raising clearly if key is missing."""
+    global _client
+    if _client is None:
+        api_key = os.getenv("GEMINI_API_KEY", "")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY is not set. Add it to your .env file.")
+        _client = genai.Client(api_key=api_key)
+    return _client
+
+GEN_CONFIG = types.GenerateContentConfig(
     temperature=0.2,        # Low temperature for structured/factual tasks
     top_p=0.8,
     top_k=40,
     max_output_tokens=4096,
-)
-
-model = genai.GenerativeModel(
-    model_name=MODEL_NAME,
-    generation_config=generation_config,
 )
 
 
@@ -59,9 +66,14 @@ def call_gemini(prompt: str) -> dict:
     Send a prompt to Gemini and parse the JSON response.
     Returns a dict with 'data' on success or 'error' on failure.
     """
+    raw_text = ""
     try:
         start = time.time()
-        response = model.generate_content(prompt)
+        response = get_client().models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+            config=GEN_CONFIG,
+        )
         elapsed = round(time.time() - start, 3)
 
         raw_text = response.text.strip()
@@ -113,7 +125,7 @@ def index():
 @app.route("/api/health", methods=["GET"])
 def health():
     """Health check endpoint."""
-    api_configured = bool(GEMINI_API_KEY)
+    api_configured = bool(os.getenv("GEMINI_API_KEY", ""))
     return jsonify({
         "status": "ok",
         "model": MODEL_NAME,
@@ -299,7 +311,7 @@ def server_error(e):
 
 # ── Entry Point ────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
+    port = int(os.getenv("PORT", 5001))
     debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
     logger.info("Starting NLP Intelligence Platform on port %d", port)
     app.run(host="0.0.0.0", port=port, debug=debug)
